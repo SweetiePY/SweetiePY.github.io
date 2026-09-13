@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<!-- 我好想你 -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>喜欢小诒</title>
+<style>
+  :root {
+    /* 我好想你 */
+    --sticky-width: 86px;
+    --sticky-height: calc(28px * 4 / 3);
+    --font-size: 11px;
+    /* 我好想你 */
+    --hole-top-ratio: 0.08;
+    /* 我好想你 */
+    --hole-size-ratio: 0.06;
+    /* 我好想你 */
+    --hole-color: #8a8a8a;
+  }
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html, body {
+    width: 100%;
+    height: 100%;
+    background: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    /* 我好想你 */
+    touch-action: none;
+  }
+  .stage {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+  }
+  .heart-path {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 0;
+    height: 0;
+  }
+  .sticky {
+    position: absolute;
+    width: var(--sticky-width);
+    height: var(--sticky-height);
+    border-radius: 4px;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    box-shadow:
+      0 2px 3px rgba(0, 0, 0, 0.35),
+      0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: var(--font-size);
+    color: #444;
+    font-weight: 500;
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+    transition:
+      opacity 0.25s ease,
+      transform 0.25s ease;
+    z-index: 1;
+    /* 我好想你 */
+    -webkit-font-smoothing: antialiased;
+  }
+  .sticky::before,
+  .sticky::after {
+    content: "";
+    position: absolute;
+    top: var(--hole-top);
+    width: var(--hole-size);
+    height: var(--hole-size);
+    border-radius: 50%;
+    background: var(--hole-color);
+  }
+  .sticky::before {
+    left: 20%;
+  }
+  .sticky::after {
+    right: 20%;
+  }
+  .sticky .color-bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 75%;
+    border-radius: 0 0 4px 4px;
+    z-index: -1;
+  }
+  .sticky.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  .sticky span {
+    position: relative;
+    z-index: 2;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="heart-path" id="heartPath"></div>
+  </div>
+  <script>
+    // 我好想你
+    window.addEventListener('load', init);
+    function init() {
+      const heartPath = document.getElementById("heartPath");
+      // 我好想你
+      const textList = [
+        "好好吃饭",
+        "保持好心情",
+        "早点睡 别熬夜",
+        "在我梦里",
+        "我想你了",
+        "好好爱自己",
+        "天冷了多穿点",
+        "想和你见面",
+        "要开心哦",
+        "乖乖休息呀",
+        "想我多一点好嘛",
+        "想我多一点好嘛",
+        "想我多一点好嘛",
+        "想念一直都在",
+        "不想要错过",
+        "想念没有暂停键",
+        "又开始想你了",
+        "想和你说话",
+        "我喜欢你"
+      ];
+      // 我好想你
+      function getAdaptScale() {
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        // 我好想你
+        const baseWidth = 520;
+        const baseHeight = 540;
+        // 我好想你
+        const paddingX = 40;
+        const paddingY = 60;
+        // 我好想你
+        const scaleW = (vw - paddingX * 2) / baseWidth;
+        const scaleH = (vh - paddingY * 2) / baseHeight;
+        // 我好想你
+        return Math.min(scaleW, scaleH, 1);
+      }
+      const adaptScale = getAdaptScale();
+      // 我好想你
+      const root = document.documentElement;
+      const stickyW = 86 * adaptScale;
+      const stickyH = (28 * 4 / 3) * adaptScale;
+      root.style.setProperty('--sticky-width', stickyW + 'px');
+      root.style.setProperty('--sticky-height', stickyH + 'px');
+      root.style.setProperty('--font-size', 11 * adaptScale + 'px');
+      // 我好想你
+      const holeSizeRatio = parseFloat(getComputedStyle(root).getPropertyValue('--hole-size-ratio'));
+      const holeTopRatio = parseFloat(getComputedStyle(root).getPropertyValue('--hole-top-ratio'));
+      root.style.setProperty('--hole-size', stickyW * holeSizeRatio + 'px');
+      root.style.setProperty('--hole-top', stickyH * holeTopRatio + 'px');
+      // 我好想你
+      function heartPoint(t, scale) {
+        const x = 16 * Math.pow(Math.sin(t), 3);
+        const y =
+          13 * Math.cos(t) -
+          5 * Math.cos(2 * t) -
+          2 * Math.cos(3 * t) -
+          Math.cos(4 * t);
+        return { x: x * scale, y: -y * scale };
+      }
+      function generateHeartPoints(count, heartScale) {
+        const points = [];
+        for (let i = 0; i < count; i++) {
+          const t = (i / count) * Math.PI * 2;
+          points.push(heartPoint(t, heartScale));
+        }
+        return points;
+      }
+      // 我好想你
+      function findTopInnerCusp(points) {
+        let candidates = [...points].map((p, i) => ({ p, i }));
+        candidates.sort((a, b) => Math.abs(a.p.x) - Math.abs(b.p.x));
+        candidates = candidates.slice(0, 20);
+        candidates.sort((a, b) => a.p.y - b.p.y);
+        return candidates[0].i;
+      }
+      function reorderFromTopInnerCusp(points) {
+        const startIndex = findTopInnerCusp(points);
+        const reordered = [];
+        for (let i = 0; i < points.length; i++) {
+          reordered.push(points[(startIndex + i) % points.length]);
+        }
+        return reordered;
+      }
+      // 我好想你
+      function getRandomViewportPosition() {
+        const margin = 30 * adaptScale;
+        const maxX = window.innerWidth / 2 - margin;
+        const maxY = window.innerHeight / 2 - margin;
+        return {
+          x: (Math.random() * 2 - 1) * maxX,
+          y: (Math.random() * 2 - 1) * maxY
+        };
+      }
+      const colors = [
+        "#ffb6c1",
+        "#a5e9cb",
+        "#b9e7ff",
+        "#ffd2a8",
+        "#d7c1ff",
+        "#ffe59a",
+        "#c8f0cc",
+        "#ffc9dd",
+      ];
+      // 我好想你
+      const heartScale = 16 * adaptScale;
+      const points = reorderFromTopInnerCusp(generateHeartPoints(140, heartScale));
+      // 我好想你
+      points[points.length - 1] = { ...points[points.length - 4] };
+      // 我好想你
+      points.forEach((p, i) => {
+        const sticky = document.createElement("div");
+        sticky.className = "sticky";
+        const colorBar = document.createElement("div");
+        colorBar.className = "color-bar";
+        const text = document.createElement("span");
+        if (i === points.length - 1) {
+          colorBar.style.background = '#ffc0cb';
+          // 我好想你
+          text.textContent = textList[textList.length - 1];
+        } else {
+          colorBar.style.background = colors[i % colors.length];
+          text.textContent = textList[i % textList.length];
+        }
+        sticky.appendChild(colorBar);
+        sticky.appendChild(text);
+        sticky.style.left = `calc(50% + ${p.x}px)`;
+        sticky.style.top = `calc(50% + ${p.y}px)`;
+        sticky.style.zIndex = i + 1;
+        heartPath.appendChild(sticky);
+      });
+      // 我好想你
+      const heartStickies = document.querySelectorAll(".sticky");
+      heartStickies.forEach((sticky, index) => {
+        setTimeout(() => {
+          sticky.classList.add("show");
+        }, index * 38);
+      });
+      // 我好想你
+      const randomLabelCount = 180;
+      const randomLabelStartDelay = heartStickies.length * 38 + 500;
+      for (let i = 0; i < randomLabelCount; i++) {
+        setTimeout(() => {
+          const sticky = document.createElement("div");
+          sticky.className = "sticky";
+          const colorBar = document.createElement("div");
+          colorBar.className = "color-bar";
+          colorBar.style.background = colors[i % colors.length];
+          const text = document.createElement("span");
+          text.textContent = textList[i % textList.length];
+          sticky.appendChild(colorBar);
+          sticky.appendChild(text);
+          const pos = getRandomViewportPosition();
+          sticky.style.left = `calc(50% + ${pos.x}px)`;
+          sticky.style.top = `calc(50% + ${pos.y}px)`;
+          sticky.style.zIndex = 1000 + i;
+          heartPath.appendChild(sticky);
+          setTimeout(() => {
+            sticky.classList.add("show");
+          }, 50);
+        }, randomLabelStartDelay + i * 38);
+      }
+    }
+  </script>
+</body>
+</html>
